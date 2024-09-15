@@ -66,9 +66,10 @@ ICON_PRODUCT_ID = 'mdi:cog'
 CONF_ECO_TEMPERATURE= 'eco_temperature'
 CONF_OVERHEAT_TEMPERATURE= 'overheat_temperature'
 CONF_DEADZONE_TEMPERATURE= 'deadzone_temperature'
-CONF_INPUT_RESET_PIN= 'reset_pin' # вход переинициализации протокола обмена 
+CONF_INPUT_RESET_PIN= 'reset_pin' # вход переинициализации протокола обмена
 CONF_MCU_RESET_PIN= 'mcu_reset_pin' # выход управления перезагрузкой процессора термостата
-CONF_STATUS_PIN= 'status_pin' # выход светодиода статуса WIFI 
+CONF_STATUS_PIN= 'status_pin' # выход светодиода статуса WIFI
+CONF_HEAT_RELAY_PIN= 'heater_status_pin' # вход сигнала статуса состояния реле нагрева
 CONF_MODE_RESTORE= 'mode_restore' # восстанавливать режим работы после перезагрузки (true/false)
 CONF_TIME_SYNC_MARKS= 'time_sync_packets' # регулярные пакеты синхронизации времени (true/false)
 CONF_MCU_RELOAD_COUNTER= 'mcu_reload_counter'
@@ -165,11 +166,13 @@ CONFIG_SCHEMA = cv.All(
                      cv.Optional(CONF_ICON, default=ICON_THERMOMETER): cv.icon,
                   },
                 ),
-              }            
-            ), 
+              }
+            ),
 
             # нога входного сигнала сброса
             cv.Optional(CONF_INPUT_RESET_PIN ): pins.gpio_input_pin_schema,
+            # нога входного сигнала осстояня реле нагрева
+            cv.Optional(CONF_HEAT_RELAY_PIN ): pins.gpio_input_pin_schema,
             # выходная нога ресета MCU термостата
             cv.Optional(CONF_MCU_RESET_PIN ): pins.gpio_output_pin_schema,
             # выходная нога отметок синхронизации времени
@@ -223,7 +226,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
-    
+
     if CONF_UART_ID in config:
        parent = await cg.get_variable(config[CONF_UART_ID])
        cg.add(var.initTermo(parent))
@@ -231,7 +234,7 @@ async def to_code(config):
        raise cv.Invalid(
           f"Setting 'uart_id' is required !"
        )
-    
+
     cg.add(var.set_optimistic(config[CONF_OPTIMISTIC]))
 
     if CONF_TIME_ID in config:
@@ -242,7 +245,7 @@ async def to_code(config):
         conf = config[CONF_EXTERNAL_TEMPERATURE]
         sens = await sensor.new_sensor(conf)
         cg.add(var.set_external_temperature_sensor(sens))
-    
+
     if CONF_INTERNAL_TEMPERATURE in config:
         conf = config[CONF_INTERNAL_TEMPERATURE]
         sens = await sensor.new_sensor(conf)
@@ -250,7 +253,7 @@ async def to_code(config):
 
     if CONF_SUPPORTED_MODES in config:
         cg.add(var.set_supported_modes(config[CONF_SUPPORTED_MODES]))
-    
+
     if CONF_SUPPORTED_PRESETS in config:
         cg.add(var.set_supported_presets(config[CONF_SUPPORTED_PRESETS]))
 
@@ -276,6 +279,9 @@ async def to_code(config):
     if CONF_INPUT_RESET_PIN in config:
         pin = await cg.gpio_pin_expression(config[CONF_INPUT_RESET_PIN])
         cg.add(var.set_input_reset_pin(pin))
+    if CONF_HEAT_RELAY_PIN in config:
+        pin = await cg.gpio_pin_expression(config[CONF_HEAT_RELAY_PIN])
+        cg.add(var.set_real_heat_pin(pin))
     if CONF_MCU_RESET_PIN in config:
         pin = await cg.gpio_pin_expression(config[CONF_MCU_RESET_PIN])
         cg.add(var.set_mcu_reset_pin(pin))
@@ -290,7 +296,7 @@ async def to_code(config):
     if (CONF_MCU_RELOAD_COUNTER) in config:
         sens = await sensor.new_sensor(config[CONF_MCU_RELOAD_COUNTER])
         cg.add(var.set_reset_counter(sens))
-    
+
     if CONF_SHEDULE in config:
         shed = config[CONF_SHEDULE]
         if CONF_SHEDULE_HOURS in shed:
@@ -310,4 +316,3 @@ async def to_code(config):
             conf = shed[CONF_SHEDULE_SELECTOR]
             sel = await select.new_select(conf, options=[])
             cg.add(var.set_plan_select(sel))
-
