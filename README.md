@@ -185,6 +185,19 @@ These pins can be added to the configuration:
 ```
 But usually these pins need to be configured as required by the thermostat MCU. If the thermostat requires such a configuration, ERROR and/or WARNING level messages will be logged indicating the required pins.
 
+**UPD (02.09.24):**
+
+Added a setting to actually monitor the state of the heating relay. This function requires modification of the thermostat. The relay control signal must be fed to the WIFI module.
+This will require level matching since the thermostat processor is 5 volts and the WIFI module is 3.3 volts. I used a 10kOhm/18kOhm resistive divider.
+The photo shows the connection point of the divider, the bottom point of the divider is of course connected to GND. Your thermostat board may be wired differently,
+but most likely the signal to the relay is in the same connector, in the same place (4 pin from the bottom).
+```yaml - platform: tuya_termo heater_status_pin: Pxx ```
+
+![image](https://github.com/user-attachments/assets/28270e30-a927-4882-b331-1fb3ef8d558c)
+![image](https://github.com/user-attachments/assets/35e8424b-5823-4e34-aa0a-fb16aa6aa453)
+
+Added saving and restoring the thermostat schedule in AUTO mode. Very strange, but my thermostat did not save the schedule when power was turned off.
+
 Approximate complete configuration (not everything in it you need):
 ```yaml
 climate:
