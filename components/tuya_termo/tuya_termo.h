@@ -328,7 +328,7 @@ class TuyaTermo : public esphome::Component, public esphome::climate::Climate {
     float temperature_eco=20;
     float temperature_overheat=45;
     float temperature_deadzone=1;
-    const float temperature_step=1;
+    const float temperature_step=0.5;
     // сенсоры
     esphome::sensor::Sensor *sensor_external_temperature_{nullptr}; // выносной сенсор температуры
     esphome::sensor::Sensor *sensor_internal_temperature_{nullptr}; // внутренний сенсор температуры
