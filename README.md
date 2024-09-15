@@ -1,48 +1,48 @@
 # ESPHome-Thermostate-Moes-BHT-002
 
 
-Большое распространение у любителей домашней автоматизации получили WIFI термостаты Moes-BHT-002.
+Moes-BHT-002 WIFI thermostats have become very popular among home automation enthusiasts.
 
 ![1](https://user-images.githubusercontent.com/11642286/208393574-359c222d-f9fa-4e75-8af6-3d01674839ef.jpg)
 
-Полное название  BHT-002-GBLW. Это вай-фай термостат электрического теплого пола из экосистемы Tuya.
-Конечно его можно использовать в родной экосистеме. Можно подключить к другим системам с использованием различных
-плгагинов и стыков. 
-Я использую Home Assistant и для подключения у меня были варианты:
-- Интеграция Tuya https://www.home-assistant.io/integrations/tuya/
-- Интеграция Local Tuya https://github.com/rospogrigio/localtuya
-- Перешить используя проект https://github.com/klausahrenberg/WThermostatBeca и подключить через MQTT
-- Есть и СТАНДАРТНАЯ интеграция https://esphome.io/components/tuya.html
+The full name is BHT-002-GBLW. This is a wi-fi electric floor heating thermostat from the Tuya ecosystem.
+Of course it can be used in the native ecosystem. It can be connected to other systems using various plugins and junctions.
+I use Home Assistant and to connect I had the following options:
+- Tuya Integration https://www.home-assistant.io/integrations/tuya/
+- Local Tuya Integration https://github.com/rospogrigio/localtuya
+- Overwire using the project https://github.com/klausahrenberg/WThermostatBeca and connect via MQTT
+- There is also STANDARD integration https://esphome.io/components/tuya.html
 
-Все эти способы рабочие, но имеют недостатки. Где то обязательно нужно наличие подключения к внешним серверам,
-где то вы не сможете использовать весь потенциал устройства, где то будут ошибки и непонятки. Да и ни один из
-этих способов не будет 100% под вашим контролем. Поизучав последний проект я пришел к выводу, что было бы не 
-плохо написать компонент для ESPHome. Тем более, что за связь в этом устройстве отвечает модуль Tuwe3S, который
-оказался аналогом ESP-12. Термостат имеет процессор который обслуживает процесс нагрева и управления и по UART
-обменивается данными с модулем Tuwe3S. Естественно найти полное описание протокола не удалось, в проекте
-WThermostatBeca был описан лишь служебный обмен, остального нет. Пришлось расшифровывать протокол, помогло то,
-что он простой и выполнен в китайском стиле :)) 
+All these methods work, but they have disadvantages. In some cases you need to be connected to external servers,
+in some cases you will not be able to use the full potential of the device, in some cases there will be errors
+and confusion. And none of these methods will be 100% under your control. After studying the last project
+I came to the conclusion that it would not be a bad idea to write a component for ESPHome.
+Especially since the Tywe3S module is responsible for communication in this device, which turned out to be an
+analog of ESP-12. The thermostat has a processor that serves the heating and control process and communicates
+with the Tuwe3S module via UART. Naturally we could not find a complete description of the protocol, in the
+project WThermostatBeca was described only the service exchange, the rest is not. We had to decipher the protocol,
+helped by the fact that it is simple and made in Chinese style :)))
 
-На выходе получается прошивка, которая является родной для ESPHome. Как всегда основная проблема первоначально 
-залить ее в Tuwe3S. Знаю, что есть проект, который позволяет ничего не паяя заменить прошивку в устройствах от
-Туя. Мне проше припаяться. Схема стандартная:
+The output is firmware, which is native to ESPHome. As always, the main problem is initially pouring it into Tywe3S.
+I know that there is a project that allows you to replace the firmware in Tuya devices without soldering anything.
+It's easier for me to solder. It's a standard circuit:
 
 ![image](https://user-images.githubusercontent.com/11642286/208415302-ad267f5a-6b39-47d1-96ba-4d81af84e8c5.png)
 
-Конечно совсем правильная схема, примерно такая:
+Of course a completely correct scheme, roughly like this:
 ![image](https://user-images.githubusercontent.com/11642286/208404195-f8384adb-0c07-4520-aa52-4a8dff1be936.png)
 
-Но "на пару раз прошить", я решил обойтись без резисторов. Вам советую все же использовать резисторы.
-Передняя панель отстегнута от термостата. Питание подается внешнее 3.3 вольта. Перед заливкой прошивки нужно
-кратковременно замкунть RESET на GND.
+But I decided to do without resistors "for a couple of flashes". I suggest you still use resistors.
+The front panel is unbolted from the thermostat. External power supply is 3.3 volts.
+It is necessary to short-circuit RESET to GND for a short time before filling the firmware.
 
-Сущности устройства:
+Device Essences:
 
 ![image](https://user-images.githubusercontent.com/11642286/208405764-30eaf520-fde5-4c25-b54b-a31cc241caed.png)
 
-Часы синхронизируются автоматически, если задан источник времени.
+The clock is synchronized automatically if a time source is set.
 
-Пример конфигурирования
+Configuration example:
 
 ```yaml
 climate:
@@ -73,60 +73,67 @@ climate:
         name: Plan Minutes
       temperature:
         name: Plan Temperatures
-    product_id:   
+    product_id:
       name: Product Identifier
 ```
 
-<b>UPD (20.09.23):</b>
+**UPD (20.09.23):**
 
-Появились версии с модулем CB3S, на базе BK7231N. В данный момент существует замечательный проект LibreTiny EspHome, надеюсь вы его легко найдете. С его помощью можно скомпилировать прошивку под новый модуль.
-Код дополнен и исправлен для коректной работы с новыми версиями термостатов с чипами на BK72xx. Новые термостаты не публикуют температуру выносного датчика, поэтому у некоторых пользователей он будет в статусе "Неизвестно", просто скройте его в конигурации. 
+There are now versions with CB3S module, based on BK7231N. At the moment there is a great project LibreTiny ESPHome,
+I hope you will find it easily. With its help you can compile the firmware for a new module.
+The code has been updated and corrected to work correctly with new versions of thermostats with BK72xx chips.
+New thermostats do not publish the temperature of the remote sensor, so for some users it will be in the status "Unknown", just hide it in the configuration.
 
-<b>Выражаю благодарность за помощь в отладке кода Михаил Mivlz</b>.
+**I would like to thank Michael Mivlz for his help in debugging the code.**
 
-Модули TUYA на чипе BK72xx шьются, практически, так же как и ESP8266, только тут в самом начале загрузки нужно посадить контакт CEN на землю, примерно на секунду. Конечно, не звбывайте, что вам нужна LibreTiny ESPHOME.
+TUYA modules on the BK72xx chip can be flashed in almost the same way as the ESP8266, except that at the very beginning of the boot you need to put the CEN
+pin to ground for about a second. Of course, do not forget that you need LibreTiny ESPHOME.
 
-Подключение для прошивки:
+Connection for flashing:
 
 ![image](https://github.com/Brokly/ESPHome-Thermostate-Moes-BHT-002/assets/11642286/922be46b-6c74-49d4-aa16-962a422c1779)
 
-Распайка чипа с сайта производителя:
+Unzip the chip from the manufacturer's website:
 
 ![image](https://github.com/Brokly/ESPHome-Thermostate-Moes-BHT-002/assets/11642286/49673fa9-3ab6-495a-9b32-de093d7249b6)
 
-Таблица назначения ног:
+Foot assignment table:
 
 ![image](https://github.com/Brokly/ESPHome-Thermostate-Moes-BHT-002/assets/11642286/0e64e196-e72c-41dc-b0a4-bbcccd5d0c9b)
 
-<b>UPD (18.12.23):</b>
+**UPD (18.12.23):**
 
-Из-за медленной реакции термостатов на бекенах добавлена настройка
+Due to the slow response of the thermostats on beckens, a setting has been added
 ```yaml
 - platform: tuya_termo
   оptimistic: true # оr false
 ```
-По умолчанию - true. При включеной опции публикация данных всегда соответствует установкам пользователя, не взирая на то применил ли установку термостат. В случае неприменимой настроки, она обновится в реальное состояние через некоторое время.
+The default setting is true. If this option is enabled, the data publication always corresponds to the user setting, regardless of whether the thermostat has applied the setting.
+In case of a non-applicable setting, it will be updated to the actual state after some time.
 
-<b>UPD (02.03.24):</b>
+**UPD (02.03.24):**
 
-Добавлена настройка 
+Added setting:
 ```yaml
 - platform: tuya_termo
   mode_restore: true # оr false
 ```
-По умолчанию - false. Настройка включает автовосстановление режима работы термостата после выключения питания. Восстанавливает только режим работы - Mode. Теперь статус подключения к WIFI и серверу передаваемый термостату соответствует реальной ситуации. Ранее статус был фиктивный.
+The default setting is false. The setting enables auto-restore of the thermostat's operating mode after power off. It only restores the operating mode - Mode.
+Now the WIFI and server connection status transmitted to the thermostat corresponds to the real situation. Previously the status was fictitious.
 
-<b>UPD (07.03.24):</b>
+**UPD (07.03.24):**
 
-Теперь при восстановлении режим работы после пропадания питания (mode_restore: true), восстанавливаются все оперативные параметры термостата (режим работы, пресет, целевая температура).
+Now when restoring the operating mode after a power failure (mode_restore: true), all operational parameters of the thermostat (operating mode, preset, target temperature) are restored.
 
-Добавлен выход для ресета MCU термостата. При долгом отсутствии ответа от MCU термостата, на выходе формируется инверсный импульс сброса (замыкание на GND). В нормальном состоянии выход в режиме HI-IMPEDANCE. Для использования функции перезагрузки термостата требуеются аппаратные доработки. Нужно прокинуть провод от управления модудем DC12->DC5, на выходную ножку термостата.
+Added an output for resetting the thermostat MCU. If there is no response from the thermostat MCU for a long time, an inverse reset pulse is generated at the output (shorted to GND).
+In normal state the output is in HI-IMPEDANCE mode. To use the thermostat reset function, hardware modifications are required. It is necessary to run a wire from DC12->DC5 modem control
+to the thermostat output leg.
 
 ![image](https://github.com/Brokly/ESPHome-Thermostate-Moes-BHT-002/assets/11642286/986822d7-a11e-4a6a-9523-2422d72b2ae4)
 
-Моя версия термостата использует преобразователь [LP6498A](http://www.lowpowersemi.com/storage/files/2023-05/7af3ba3edb6fc52b54c51add36301d7e.pdf)
+My version of the thermostat uses an inverter [LP6498A](http://www.lowpowersemi.com/storage/files/2023-05/7af3ba3edb6fc52b54c51add36301d7e.pdf)
 
-Точка подключения для управления режимом работы dc/dc преобразователя
+Connection point for dc/dc converter operating mode control
 ![image](https://github.com/Brokly/ESPHome-Thermostate-Moes-BHT-002/assets/11642286/62a75737-76d4-4040-a4ac-c83248175eaf)![image](https://github.com/Brokly/ESPHome-Thermostate-Moes-BHT-002/assets/11642286/44d7258b-4a69-4528-916b-e9c49c1f42ee)
 
 
@@ -136,7 +143,7 @@ climate:
   mcu_reset_pin: GPIOXX
 ```
 
-Изменено конфигурирование контролов расписания
+Changed configuration of schedule controllers:
 ```yaml
 - platform: tuya_termo
   shedule:
@@ -152,57 +159,60 @@ climate:
 
 <b>UPD (12.03.24):</b>
 
-Добавлен счетчик перезагрузок. Счетчик считает количество перезагрузок, при прошивке по OTA сбрасывается в ноль. Попытка перезагрузки происходит при долгом отсутствии ответа от MCU термостата. Если три попытки восстановить связь безуспешны, производится полная перезагрузка модуля связи.
+Added reboot counter. The counter counts the number of reboots and is reset to zero when flashing via OTA. A reboot is attempted if the thermostat MCU does not respond for a long time.
+If three attempts to re-establish communication are unsuccessful, a complete reboot of the communication module is performed.
 ```yaml
 - platform: tuya_termo
   mcu_reload_counter:
     name: MCU Reset Counter
 ```
 
-Добавлена настройка позволяющая включить/выключить пакеты синхронизации времени. Некоторым термостатам, для правильной работы часов, требуются ежесекундные пакеты, которые позволяют часам идти, в противном случае, часы стоят.
-По умолчанию настрока выключена (false), ежесекундные пакеты не отправляются. Ниже пример конфигурации со включенной отправкой ежесекундных пакетов
+Added a setting to enable/disable time synchronization packets. Some thermostats, for the clock to work properly, require every second packets that allow the clock to go, otherwise the clock stands still.
+By default, the setting is disabled (false) and no every-second packets are sent. Below is an example of a configuration with every-second packets sent enabled
 ```yaml
 - platform: tuya_termo
   time_id: sync_time_id
   time_sync_packets: true
 ```
 
-Добавлены настройки дополнительных выходов. Некоторые устройства требуют управление через пины. Это вход ресета протокола reset_pin, получив на этом пине изменение уровня сигнала модуль управления проводит реинициализацию, с передачей всех настроек так, как будто устройство только что включили. Так же выход status_pin, преположительно, к этому пину должен быть подключен светодиод устройства, индицирующий режим работы сети. Эти пины могут быть добавлены в конфигурацию:
+Added settings for additional outputs. Some devices require control via pins. This is the reset input of the reset_pin protocol, upon receiving a change in signal level on this pin, the control module re-initializes,
+with all settings being transferred as if the device had just been turned on. Also output status_pin, presumably to this pin should be connected LED device, indicating the mode of operation of the network.
+These pins can be added to the configuration:
 ```yaml
 - platform: tuya_termo
   status_pin: Pxx
   reset_pin: Pxx
 ```
-Но как правило, эти пины нужно конфигурировать по требованию MCU термостата. Если термостату требуется такая конфиигурация, то в лог будут выданы сообщения уровня ERROR и/или WARNING, в которых будут указаны нужные пины. 
+But usually these pins need to be configured as required by the thermostat MCU. If the thermostat requires such a configuration, ERROR and/or WARNING level messages will be logged indicating the required pins.
 
-Примерная полная конфигурация (не все что есть в ней нужно Вам):
+Approximate complete configuration (not everything in it you need):
 ```yaml
 climate:
   - platform: tuya_termo
     name: ${upper_devicename}
-    uart_id: uart_bus # uart шина для управления MCU термостата
-    time_id: sync_time # источник синхронизации времени
-    time_sync_packets: false # пакеты синхронизациии времени, для некоторых версий устройств (по умолчанию false)
-    optimistic: true 
-    mode_restore: true # настройка восстановления режима работы после перезагрузки (по умолчанию true)
-    mcu_reset_pin: P9  # выходной пин принудительного сброса MCU термостата (только для доработанных термостатов)
-    reset_pin: P14 # входной пин для реинициализации протокола обмена с MCU, требуется для некоторых термостатов
-    status_pin: P15 # выходной пин индикации сетевого статуса, требуется для некоторых термостатов, но можно установить светодиод
-    mcu_reload_counter: # счетчик принудительных перезагрузок MCU термостата
+    uart_id: uart_bus # uart bus for controlling the thermostat MCU
+    time_id: sync_time # time synchronization source
+    time_sync_packets: false # time synchronization packets, for some device versions (false by default)
+    optimistic: true
+    mode_restore: true # setting to restore operation mode after reboot (default is true)
+    mcu_reset_pin: P9  # Thermostat MCU forced reset output pin (only for retrofitted thermostats)
+    reset_pin: P14 # input pin for reinitializing the communication protocol with MCU, required for some thermostats
+    status_pin: P15 # output pin for network status indication, required for some thermostats, but LED can be installed
+    mcu_reload_counter: # counter of forced restarts of the thermostat MCU
       name: ${upper_devicename} MCU Reset Counter
-    visual: # настройки для правильного отображения виджета, в большинстве случаев используются по умолчанию
+    visual: # settings for proper widget display, in most cases defaults are used
       min_temperature: 5
-      max_temperature: 35 
+      max_temperature: 35
       eco_temperature: 20
       overheat_temperature: 45
       deadzone_temperature: 1
-    internal_temperature: # сенсор температуры воздуха в помещении
-      name: ${upper_devicename} Internal Temperature  
-    external_temperature: # внешний сенсор температуры пола
+    internal_temperature: # room temperature sensor
+      name: ${upper_devicename} Internal Temperature
+    external_temperature: # external floor temperature sensor
       name: ${upper_devicename} External Temperature
     children_lock:
       name: ${upper_devicename} Child Lock
-    shedule: # набор контролов для управления расписанием автономной работы термостата
+    shedule: # set of controllers for managing the thermostat's autonomous operation schedule
       selector:
         name: ${upper_devicename} Plan Day Selector
       hours:
@@ -211,6 +221,6 @@ climate:
         name: ${upper_devicename} Plan Minutes
       temperature:
         name: ${upper_devicename} Plan Temperatures
-    product_id:   
+    product_id:
       name: ${upper_devicename} Product Identifier
 ```
