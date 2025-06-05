@@ -120,7 +120,7 @@ def output_info(config):
     return config
 
 CONFIG_SCHEMA = cv.All(
-    climate.CLIMATE_SCHEMA.extend(
+    climate.climate_schema(cv.COMPONENT_SCHEMA).extend(
         {
             cv.GenerateID(): cv.declare_id(TuyaTermo),
             cv.Optional(CONF_OPTIMISTIC, default="true"): cv.boolean,
@@ -140,27 +140,27 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_SHEDULE, default={}): cv.Schema(
               {
-                cv.Optional(CONF_SHEDULE_SELECTOR): select.SELECT_SCHEMA.extend(cv.COMPONENT_SCHEMA).extend(
+                cv.Optional(CONF_SHEDULE_SELECTOR): sensor.sensor_schema(cv.COMPONENT_SCHEMA).extend(cv.COMPONENT_SCHEMA).extend(
                   {
                      cv.GenerateID(): cv.declare_id(TuyaTermo_Select),
                      cv.Optional(CONF_ICON, default=ICON_SHEDULE_SELECTOR): cv.icon,
                   },
                 ),
-                cv.Optional(CONF_SHEDULE_HOURS): number.NUMBER_SCHEMA.extend(cv.COMPONENT_SCHEMA).extend(
+                cv.Optional(CONF_SHEDULE_HOURS): number.number_schema(cv.COMPONENT_SCHEMA).extend(cv.COMPONENT_SCHEMA).extend(
                   {
                      cv.GenerateID(): cv.declare_id(TuyaTermo_Number),
                      cv.Optional(CONF_ICON, default=ICON_SHEDULE_HOURS): cv.icon,
                      cv.Optional(CONF_MODE, default="BOX"): cv.enum(NUMBER_MODES, upper=True),
                   },
                 ),
-                cv.Optional(CONF_SHEDULE_MINUTES): number.NUMBER_SCHEMA.extend(cv.COMPONENT_SCHEMA).extend(
+                cv.Optional(CONF_SHEDULE_MINUTES): number.number_schema(cv.COMPONENT_SCHEMA).extend(cv.COMPONENT_SCHEMA).extend(
                   {
                      cv.GenerateID(): cv.declare_id(TuyaTermo_Number),
                      cv.Optional(CONF_ICON, default=ICON_SHEDULE_MINUTES): cv.icon,
                      cv.Optional(CONF_MODE, default="BOX"): cv.enum(NUMBER_MODES, upper=True),
                   },
                 ),
-                cv.Optional(CONF_SHEDULE_TEMPERATURE): number.NUMBER_SCHEMA.extend(cv.COMPONENT_SCHEMA).extend(
+                cv.Optional(CONF_SHEDULE_TEMPERATURE): number.number_schema(cv.COMPONENT_SCHEMA).extend(cv.COMPONENT_SCHEMA).extend(
                   {
                      cv.GenerateID(): cv.declare_id(TuyaTermo_Number),
                      cv.Optional(CONF_ICON, default=ICON_THERMOMETER): cv.icon,
